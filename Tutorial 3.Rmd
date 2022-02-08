@@ -1,0 +1,115 @@
+---
+title: "Tutorial 3"
+author: "Linqing Bian"
+date: "2/7/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1
+
+#### *1.	If the spot exchange rate of the yen relative to the dollar is ¥105.75, and the 90-day forward rate is ¥103.25/$, is the dollar at a forward premium or discount? Express the premium or discount as a percentage per annum for a 360-day year.*
+
+
+```{r Q1}
+discount<-(103.25-105.75)/105.75
+per<-discount*(360/90)*100
+per
+```
+## Q2
+
+#### *2.	Does China currently have a current account deficit or surplus? Explain what this means, and discuss the problems it might cause in the future.*
+
+### Answer:
+>Surplus
+
+
+## Q3
+
+#### *3.	As a currency trader, you see the following quotes on your computer screen: (a)	What are the outright forward bid and ask quotes for the USD/EUR at the 3-month maturity?*
+
+### Answer:
+>The spot bid and ask quotes for USD/EUR are 1.0435/45. These quotes mean that thebank   buys   euros   with   dollars   spot   at   $1.0435/€,   and   the   bank   sells   euros   for   dollars   at$1.0445/€. Because the forward points at the 3-month maturity are 75/90, we know that wemust add the points to get the outright forward bid and ask rates. Adding the points makes thebid-ask   spread   in   the   forward   market   larger  than   the   bid-ask   spread   in   the   spot   market.Consequently, the forward bid rate is **$1.0435/€ + $0.0075/€ = $1.0510/€**, and the forward askquote is **$1.0445/€ + $0.0090/€ = $1.0535/€**
+
+```{r bid}
+1.0435+0.0075
+1.0445+0.0090
+```
+
+
+#### *(b)	If one of your corporate customers calls you and wants to buy pounds with dollars in 6 months, what price would you quote?*
+
+>If the customer wants to buy pounds with dollars, the customer must pay thebank’s 6-month ask rate. The spot quotes are **1.6623/33** which means the spot ask rate is**$1.6633/£**. The 6-month forward points are **120/130**. We add the points because the firstone, 120, is less than the second, 130. Hence, the outright forward quote would be**$1.6633/£ + $0.0130/£ = $1.6763/£**
+
+```{r ba6m}
+1.6633+0.0130
+```
+
+
+## Q4
+
+#### *4.	Does the U.K. currently have a current account deficit or surplus? Explain what this means, and discuss the problems it might cause in the future.*
+
+### Answer:
+>Deficit
+
+
+## Q5
+
+#### *5.	If the yen is selling at a premium relative to the euro in the forward market, is the forward price of EUR per JPY larger or smaller than the spot price of EUR per JPY?*
+
+### Answer:
+>When the yen is selling at a premium in the forward market, the euro price of the yen in the forward market, EUR per JPY, would be larger than the spot price of EUR per JPY
+
+
+
+<br>  
+<br>
+
+## Q6
+
+#### *6.	Suppose today is Tuesday, January 18, 2011. If you enter into a 30-day forward contract to purchase euros, when will you pay your dollars and receive your euros? (Hints: February 18, 2011, is a Friday, and the following Monday is a holiday.)*
+
+### Answer:
+
+#### For dollar-euro contracts, the spot value date is two business days in the future. 
+
+>Thus, for a spot contract on Tuesday,  January 18, 2011, the  exchange of  currencies  would  take place on **Thursday,January 20,  2011**. 
+The 30-day forward contract settles on the **calendar  day** in the next month corresponding to the date of spot settlement if that is a legitimate business day. 
+The forward contract would therefore settle on February, 20, 2011 if that is a legitimate business day, but that date is a Sunday. 
+Furthermore, Monday, February 21, 2011, is a holiday, so the settlement of the forward contract would be on **Tuesday, February 22, 2011**
+
+## Q7
+
+#### *7.	As a foreign exchange trader for JP Morgan Chase, you have just called a trader at UBS to get quotes for the British pound for the spot, 30-day, 60-day, and 90-day forward rates. Your UBS counterpart stated, “We trade sterling at $1.7745-50, 47/44, 88/81, 125/115.” What cash flows would you pay and receive if you do a forward foreign exchange swap in which you swap into £5,000,000 at the 30-day rate and out of £5,000,000 at the 90-day rate?*
+
+### Answer:
+
+>The fact that you are swapping into £5,000,000 at the 30-day rate forward rate means that you are paying dollars and buying pounds. You would do this transaction at thebank’s 30-day forward ask rate. To find the forward ask rate, you must realize that the 30-day forward points of 47/44 indicate the amounts that must be subtracted from the spot bidand ask quotes to get the forward rates. ***We know to subtract the points because the first forward point is greater than the second***. Hence, the first part of the swap would be done at**$1.7750/£ - $0.0044/£ = $1.7706/£**. Therefore, to buy £5,000,000 you would pay**$1.7706/£ × £5,000,000 = $8,853,000**In the second leg of the swap, you would sell £5,000,000 for dollars in the 90-day forwardmarket. Because you are selling pound for dollars, you transact at the 90-day forward bidrate of **$1.7745/£ - $0.0125/£ = $1.7620/£**. Therefore, you would receive**$1.7620/£ × £5,000,000 = $8,810,000**Notice that you get back fewer dollars than you paid, but you had use of £5,000,000 for 60days. *Thus, the pound must be the higher interest rate currency*
+
+
+## Q8
+
+#### *8.	What is the current 180-day forward premium or discount on the dollar in terms of yen?  *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
