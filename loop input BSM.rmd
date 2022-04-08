@@ -1,0 +1,126 @@
+---
+title: "loop input"
+output: html_document
+date: '2022-04-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r SPX loop for RandD}
+################
+timestart<-Sys.time()
+
+
+
+#linear regression
+nSteps=1000
+call_put=-1#1 for call option, -1 for put option
+
+for (m in Dates){
+cnt <- 0
+  
+#cal ttm and R and dividend
+BSM <- 
+  TESTsampleImpliedR %>% 
+  filter(expiryDate==m)
+
+ttm=TTM <- unique(BSM$ttm)
+
+resIR <- lm(strike ~ x,data = BSM)
+
+impliedSPXF <- resIR$coefficients[1]
+
+impliedR <- log(resIR$coefficients[2])/ttm
+
+impliedDividend <- impliedR-log(impliedSPXF/spotUnderlying)/ttm
+
+BSM <- 
+  BSM %>% 
+  mutate(impliedSPXF=resIR$coefficients[1],
+         impliedR=log(resIR$coefficients[2])/ttm) %>% 
+  mutate(impliedDividend=impliedR-log(impliedSPXF/spotUnderlying)/ttm) 
+
+
+d=as.Date.numeric(m)
+print(paste('for SPX expiry in',d,'we have R=',impliedR,'and Dividend=  ',impliedDividend))
+
+interestRate=as.numeric(impliedR <- log(resIR$coefficients[2])/ttm) 
+
+dividendYield=as.numeric(impliedR-log(impliedSPXF/spotUnderlying)/ttm)
+
+##########
+###load codes into para
+ttm=TTM <- unique(BSM$ttm)
+
+
+
+#### load as his format
+volatility=volatilitySPX 
+deltaT=ttm/nSteps
+spotUnderlying=spotUnderlyingSPX
+nSteps=252
+
+strike=Strikes <- unique(BSM$strike)
+
+interestRate=as.numeric(impliedR <- log(resIR$coefficients[2])/ttm) 
+
+dividendYield=as.numeric(impliedR-log(impliedSPXF/spotUnderlying)/ttm)
+
+call_put=1 # 1 for all, -1 for put
+muGBM=interestRate-dividendYield
+nTimes=100000
+
+
+
+
+###############
+
+####
+  for (n in strike){
+    TESTstrike <- n
+
+d1=(log(spotUndelrying/strike)+(interestRate-dividendYield+volatility^2/2))*ttm/(volatility*sqrt(ttm))
+
+d2=d1-volatility*sqrt(ttm)
+
+
+callPrice=
+  spotUndelrying*exp(-dividendYield*ttm)*pnorm(d1)-strike*exp(-interestRate*ttm)*pnorm(d2)
+
+putPrice=
+  strike*exp(-interestRate*ttm)*pnorm(-d2)-spotUndelrying*exp(-dividendYield*ttm)*pnorm(-d1)
+  
+  cnt <- cnt+1
+  
+  #cat('Loop',paste(cnt),'is for option expiry at',paste(d),'when strike is',n,"Option price is: ",optionTemp,'\n')
+  
+  
+  
+  BSMcall[cnt] <- callPrice
+  BSMput[cnt] <- putPrice
+  
+  
+  }
+
+BSM <- 
+  BSM %>% 
+  mutate(call=BSMcall,
+         put=BSMput)
+
+if (m==18278)
+  {BSMResult <- BSM}
+  else
+    {BSMResult <- bind_rows(TESTResult,BSM)}
+}
+
+
+#output time usage
+timeend<-Sys.time()
+
+runningtime<-timeend-timestart
+
+print(runningtime)
+
+```
