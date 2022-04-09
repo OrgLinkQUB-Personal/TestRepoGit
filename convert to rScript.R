@@ -1,0 +1,7 @@
+knitr::purl("SPYtree.rmd")
+knitr::purl("preSPYtree.rmd")
+knitr::purl("q6spy.rmd")
+knitr::purl("GBM.rmd")
+knitr::purl("BSMloop.rmd")
+knitr::purl("MClnS.rmd")
+knitr::purl("computerPractice 1&2&3 ReOrg.rmd")
