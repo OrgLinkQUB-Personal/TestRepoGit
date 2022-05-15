@@ -1,0 +1,171 @@
+---
+title: "arima+garch"
+author: "LBian01"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Import the necessary libraries
+library(quantmod)
+library(lattice)
+library(timeSeries)
+library(rugarch)
+```
+
+
+```{r}
+# Obtain the S&P500 returns and truncate the NA value
+getSymbols("^GSPC", from="2015-01-01")
+
+spReturns = diff(log(Cl(GSPC)))
+
+spReturns[as.character(head(index(Cl(GSPC)),1))] = 0
+
+```
+
+
+```{r}
+# Create the forecasts vector to store the predictions
+windowLength = 500
+foreLength = length(spReturns) - windowLength
+forecasts <- vector(mode="character", length=foreLength)
+
+```
+
+```{r}
+for (d in 0:foreLength) {
+    # Obtain the S&P500 rolling window for this day
+    spReturnsOffset = spReturns[(1+d):(windowLength+d)]
+
+    # Fit the ARIMA model
+    final.aic <- Inf
+    final.order <- c(0,0,0)
+    for (p in 0:5) for (q in 0:5) {
+        if ( p == 0 && q == 0) {
+            next
+        }
+
+        arimaFit = tryCatch( arima(spReturnsOffset, order=c(p, 0, q)),
+                             error=function( err ) FALSE,
+                             warning=function( err ) FALSE )
+
+        if( !is.logical( arimaFit ) ) {
+            current.aic <- AIC(arimaFit)
+            if (current.aic < final.aic) {
+                final.aic <- current.aic
+                final.order <- c(p, 0, q)
+                final.arima <- arima(spReturnsOffset, order=final.order)
+            }
+        } else {
+            next
+        }
+    }
+
+    # Specify and fit the GARCH model
+    spec = ugarchspec(
+        variance.model=list(garchOrder=c(1,1)),
+        mean.model=list(armaOrder=c(final.order[1], final.order[3]), include.mean=T),
+        distribution.model="sged"
+    )
+    fit = tryCatch(
+      ugarchfit(
+        spec, spReturnsOffset, solver = 'hybrid'
+      ), error=function(e) e, warning=function(w) w
+    )
+
+    # If the GARCH model does not converge, set the direction to "long" else
+    # choose the correct forecast direction based on the returns prediction
+    # Output the results to the screen and the forecasts vector
+    if(is(fit, "warning")) {
+      forecasts[d+1] = paste(index(spReturnsOffset[windowLength]), 1, sep=",")
+      print(paste(index(spReturnsOffset[windowLength]), 1, sep=","))
+    } else {
+      fore = ugarchforecast(fit, n.ahead=1)
+      ind = fore@forecast$seriesFor
+      forecasts[d+1] = paste(colnames(ind), ifelse(ind[1] < 0, -1, 1), sep=",")
+      print(paste(colnames(ind), ifelse(ind[1] < 0, -1, 1), sep=",")) 
+    }
+}
+```
+
+```{r}
+# Output the CSV file to "forecasts.csv"
+write.csv(forecasts, file="forecasts.csv", row.names=FALSE)
+```
+
+```{r}
+
+data(dmbp)
+spec = ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+		mean.model = list(armaOrder = c(1,1), include.mean = TRUE), distribution.model = "std")
+fit = ugarchfit(data = dmbp[,1], out.sample = 50, spec = spec)
+pred = ugarchforecast(fit, n.ahead = 50)
+pred.fpm = fpm(pred)
+# show method
+pred.fpm
+# extract meanloss
+as.data.frame(pred.fpm, which = "sigma", type = "meanloss")
+# extract the actual loss series
+as.data.frame(pred.fpm, which = "sigma", type = "loss", rollframe = 0)
+
+# an example with rolling:
+pred = ugarchforecast(fit, n.ahead = 50, n.roll = 2)
+pred.fpm = fpm(pred)
+# show method
+pred.fpm
+# extract meanloss
+as.data.frame(pred.fpm, which = "sigma", type = "meanloss")
+# extract the actual loss series (notice the NA's at the end since
+# we are calculating on 50 + 2 (roll) points using only 50 out.sample data points (for realized)
+as.data.frame(pred.fpm, which = "sigma", type = "loss", rollframe = 2)
+
+# an example with fictional realized:
+pred = ugarchforecast(fit, n.ahead = 50, n.roll = 1)
+pred.fpm = fpm(pred, realized = rep(-0.01, 52), realized.type = "series")
+# show method
+pred.fpm
+# extract meanloss
+as.data.frame(pred.fpm, which = "sigma", type = "meanloss")
+# extract the actual loss series (notice the NA's at the end since
+# we are calculating on 50 + 2 (roll) points using only 50 out.sample data points (for realized)
+as.data.frame(pred.fpm, which = "series", type = "loss", rollframe = 1)
+```
+
+
+```{r}
+window(ausbeer, start=1995)
+subset(ausbeer, start=length(ausbeer)-4*5)
+tail(ausbeer, 4*5)
+data(ausbeer)
+```
+```{r}
+beer2 <- window(ausbeer,start=1992,end=c(2007,4))
+
+beerfit1 <- meanf(beer2,h=10)
+beerfit2 <- rwf(beer2,h=10)
+beerfit3 <- snaive(beer2,h=10)
+autoplot(window(ausbeer, start=1992)) +
+  autolayer(beerfit1$mean, series="均值") +
+  autolayer(beerfit2$mean, series="Naïve") +
+  autolayer(beerfit3$mean, series="季节性naïve") +
+  xlab("年份") + ylab("百万升") +
+  ggtitle("啤酒季度产量预测") +
+  guides(colour=guide_legend(title="预测")) +
+  theme(text = element_text(family = "STHeiti")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+beer3 <- window(ausbeer, start=2008)
+
+accuracy(beerfit1, beer3)
+accuracy(beerfit2, beer3)
+accuracy(beerfit3, beer3)
+
+```
+
